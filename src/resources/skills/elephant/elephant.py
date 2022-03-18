@@ -7,6 +7,11 @@ from src.resources.skills.skill import Skill
 
 
 class Elephant(Skill):
+    SALE_ORDER = ['Слона', 'Кролика']
+    PERMISSION_WORDS = ['ладно', 'куплю', 'покупаю', 'хорошо']
+    INIT_SUGGESTS = ['Не хочу!', 'Не буду!', 'Отстань.']
+    INIT_SALE_INDEX = 0
+
     def post(self):
         logging.info(f'Request: {request.json!r}')
 
@@ -34,43 +39,53 @@ class Elephant(Skill):
             # Инициализируем сессию и поприветствуем его.
             # Запишем подсказки, которые мы ему покажем в первый раз
             self.sessionStorage[user_id] = {
-                'suggests': [
-                    "Не хочу.",
-                    "Не буду.",
-                    "Отстань!",
-                ]
+                'suggests': self.INIT_SUGGESTS,
+                'sale_index': self.INIT_SALE_INDEX
             }
+
             # Заполняем текст ответа
-            response['response']['text'] = 'Привет! Купи слона!'
+            response['response']['text'] = \
+                f'Привет! Купи {self.SALE_ORDER[self.INIT_SALE_INDEX]}!'
             # Получим подсказки
             response['response']['buttons'] = self.get_suggests(user_id)
             return
 
-        # Сюда дойдем только, если пользователь не новый,
-        # и разговор с Алисой уже был начат
-        # Обрабатываем ответ пользователя.
-        # В req['request']['original_utterance'] лежит весь текст,
-        # что нам прислал пользователь
-        # Если он написал 'ладно', 'куплю', 'покупаю', 'хорошо',
-        # то мы считаем, что пользователь согласился.
+        # Пользователя нет в хранилище, но при этом значение
+        # session.new = false, что скорее всего означает, что сервер был
+        # перезапущен после начала игры
+        if user_id not in self.sessionStorage:
+            response['response']['text'] = \
+                'Я тебя что-то не помню, начни игру заново'
+            response['response']['end_session'] = True
+            return
+
+        sale_index = self.sessionStorage[user_id]['sale_index']
+        sale_obj = self.SALE_ORDER[self.sessionStorage[user_id]['sale_index']]
+
+        # Проверка на согласие покупки
         tokens = request['request']['nlu']['tokens']
         for token in tokens:
             # Здесь не используется функция lower потому что все токены
             # предварительно присылаются в нижнем регистре
-            if token in ['ладно', 'куплю', 'покупаю', 'хорошо']:
-                # Пользователь согласился, прощаемся.
-                response['response']['text'] = \
-                    'Слона можно найти на Яндекс.Маркете!'
-                response['response']['end_session'] = True
-                return
+            if token in self.PERMISSION_WORDS:
 
-        # Если нет, то убеждаем его купить слона!
+                # Если вещей для продажи не осталось
+                if sale_index >= len(self.SALE_ORDER) - 1:
+                    response['response']['text'] = \
+                        f'{sale_obj} можно найти на Яндекс.Маркете!'
+                    response['response']['end_session'] = True
+                    return
+                else:
+                    self.sessionStorage[user_id]['sale_index'] += 1
+
+        # Убеждение в покупке
         response['response']['text'] = \
             f"Все говорят '{request['request']['original_utterance']}', " \
-            f"а ты купи слона!"
+            f"а ты купи {sale_obj}!"
         response['response']['buttons'] = self.get_suggests(user_id)
 
     def get_suggests(self, user_id):
+        sale_obj = self.SALE_ORDER[self.sessionStorage[user_id]['sale_index']]
         session = self.sessionStorage[user_id]
 
         # Выбираем две первые подсказки из массива.
@@ -88,7 +103,7 @@ class Elephant(Skill):
         if len(suggests) < 2:
             suggests.append({
                 "title": "Ладно",
-                "url": "https://market.yandex.ru/search?text=слон",
+                "url": f"https://market.yandex.ru/search?text={sale_obj}",
                 "hide": True
             })
 
