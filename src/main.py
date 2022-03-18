@@ -9,10 +9,5 @@ def main():
     serve(app, host='0.0.0.0', port=port)
 
 
-    @app.route('/')
-    def test_route():
-        return 'Тест'
-
-
 if __name__ == '__main__':
     main()
