@@ -78,7 +78,8 @@ class Elephant(Skill):
                     return
                 else:
                     self.sessionStorage[user_id]['sale_index'] += 1
-                    sale_obj = self.SALE_ORDER[sale_index]
+                    sale_obj = self.SALE_ORDER[
+                        self.sessionStorage[user_id]['sale_index']]
 
                     response['response']['text'] = \
                         f'Спасибо! Вот, держи, купишь еще {sale_obj}?!'
