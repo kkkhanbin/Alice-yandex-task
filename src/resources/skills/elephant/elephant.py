@@ -74,11 +74,16 @@ class Elephant(Skill):
                     response['response']['text'] = \
                         f'{sale_obj} можно найти на Яндекс.Маркете!'
                     response['response']['end_session'] = True
+
                     return
                 else:
-                    print(self.sessionStorage[user_id]['sale_index'], self.SALE_ORDER)
                     self.sessionStorage[user_id]['sale_index'] += 1
                     sale_obj = self.SALE_ORDER[sale_index]
+
+                    response['response']['text'] = \
+                        f'Спасибо! Вот, держи, купишь еще {sale_obj}?!'
+
+                    return
 
         # Убеждение в покупке
         response['response']['text'] = \
