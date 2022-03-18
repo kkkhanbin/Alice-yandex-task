@@ -20,7 +20,9 @@ class Elephant(Skill):
 
         logging.info(f'Response:  {response!r}')
 
-        return json.dumps(response, ensure_ascii=False)
+        return response
+
+        # return json.dumps(response, ensure_ascii=False)
 
     def handle_dialog(self, request, response):
         user_id = request['session']['user_id']
