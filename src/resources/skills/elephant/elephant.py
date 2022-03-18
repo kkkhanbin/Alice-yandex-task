@@ -76,7 +76,9 @@ class Elephant(Skill):
                     response['response']['end_session'] = True
                     return
                 else:
+                    print(self.sessionStorage[user_id]['sale_index'], self.SALE_ORDER)
                     self.sessionStorage[user_id]['sale_index'] += 1
+                    sale_obj = self.SALE_ORDER[sale_index]
 
         # Убеждение в покупке
         response['response']['text'] = \
