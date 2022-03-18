@@ -20,6 +20,8 @@ class Elephant(Skill):
 
         logging.info(f'Response:  {response!r}')
 
+        self.handle_dialog(request.json, response)
+
         return response
 
         # return json.dumps(response, ensure_ascii=False)
