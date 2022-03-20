@@ -101,7 +101,7 @@ class GuessCity(Skill):
 
     @staticmethod
     def get_city(request):
-        # перебираем именованные сущности
+        # Перебираем именованные сущности
         for entity in request['request']['nlu']['entities']:
             # если тип YANDEX.GEO то пытаемся получить город(city),
             # если нет, то возвращаем None
