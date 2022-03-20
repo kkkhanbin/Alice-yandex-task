@@ -34,6 +34,10 @@ class GuessCity(Skill):
         # 4. Проверка ответа
         guess_city = self.get_city(request)
 
+        if guess_city is None:
+            self.say(response, 'Ты не назвал город!')
+            return
+
         if guess_city.lower() == self.sessionStorage[user_id]['guess_city']:
             if len(self.sessionStorage[user_id]['cities']) == 0:
                 message = 'Ты угадал! К сожалению ты угадал все города и' \
