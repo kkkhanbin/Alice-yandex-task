@@ -1,8 +1,3 @@
-import json
-import logging
-
-from flask import request
-
 from src.resources.skills.skill import Skill
 
 
@@ -11,25 +6,6 @@ class Elephant(Skill):
     PERMISSION_WORDS = ['ладно', 'куплю', 'покупаю', 'хорошо']
     INIT_SUGGESTS = ['Не хочу!', 'Не буду!', 'Отстань.']
     INIT_SALE_INDEX = 0
-
-    def post(self):
-        logging.info(f'Request: {request.json!r}')
-
-        response = {
-            'session': request.json['session'],
-            'version': request.json['version'],
-            'response': {
-                'end_session': False
-            }
-        }
-
-        logging.info(f'Response:  {response!r}')
-
-        self.handle_dialog(request.json, response)
-
-        return response
-
-        # return json.dumps(response, ensure_ascii=False)
 
     def handle_dialog(self, request, response):
         user_id = request['session']['user_id']
