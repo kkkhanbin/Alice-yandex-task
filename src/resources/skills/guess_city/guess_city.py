@@ -16,8 +16,8 @@ class GuessCity(Skill):
 
         # 1. Просьба представиться нового пользователя
         if request['session']['new']:
-            self.init_dialog(request)
             self.say(response, 'Привет! Назови свое имя!')
+            self.init_dialog(request)
 
         # 2. Получение имени пользователя
         if self.sessionStorage[user_id]['first_name'] is None:
@@ -39,6 +39,7 @@ class GuessCity(Skill):
                 message = 'Ты угадал! К сожалению ты угадал все города и' \
                           ' поэтому я не смогу больше с тобой играть! Пока.'
                 self.say(response, message)
+                response['end_session'] = True
             else:
                 self.ask_city(request, response)
         else:
@@ -79,8 +80,15 @@ class GuessCity(Skill):
         # Стартовое слово не было сказано
         if not self.sessionStorage[user_id]['started']:
             self.say(response, 'Может, начнем игру?')
+
             response['response']['buttons'] = [
-                choice(self.START_GAME_WORDS)]
+                {
+                    'title': choice(self.START_GAME_WORDS),
+                    'payload': {},
+                    'hide': True
+                }
+            ]
+
             return False
 
     def get_name(self, request, response):
