@@ -6,8 +6,7 @@ from waitress import serve
 
 def main():
     port = int(os.environ.get('PORT', 5000))
-    app.run(port=port)
-    # serve(app, host='0.0.0.0', port=port)
+    serve(app, host='0.0.0.0', port=port)
 
 
 if __name__ == '__main__':
