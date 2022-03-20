@@ -26,7 +26,7 @@ class GuessCity(Skill):
 
         # 3. Согласие на игру
         if not self.sessionStorage[user_id]['started']:
-            if not self.start_game(request, response):
+            if self.start_game(request, response) is False:
                 return
             else:
                 self.ask_city(request, response)
