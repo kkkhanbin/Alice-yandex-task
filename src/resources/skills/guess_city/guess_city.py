@@ -45,6 +45,7 @@ class GuessCity(Skill):
                           ' поэтому я не смогу больше с тобой играть! Пока.'
                 self.say(response, message)
                 response['end_session']['response'] = True
+                return
             else:
                 self.ask_city(request, response)
         else:
