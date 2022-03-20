@@ -1,70 +1,103 @@
-import random
+from random import choice
 
 from src.resources.skills.skill import Skill
 
 
 class GuessCity(Skill):
-    CITIES = {
+    INIT_CITIES = {
         'москва': ['1533899/b3a00a1f31ab1d664699'],
         'нью-йорк': ['1030494/26316c9fda1b9bef5760'],
         'париж': ['1521359/b76a945d7e6fcf29c351']
     }
+    START_GAME_WORDS = ['начать', 'старт', 'поехали']
 
     def handle_dialog(self, request, response):
         user_id = request['session']['user_id']
 
-        # если пользователь новый, то просим его представиться.
+        # 1. Просьба представиться нового пользователя
         if request['session']['new']:
-            response['response']['text'] = 'Привет! Назови свое имя!'
-            # создаем словарь в который в будущем положим имя пользователя
-            self.sessionStorage[user_id] = {'first_name': None}
+            self.init_dialog(request)
+            self.say(response, 'Привет! Назови свое имя!')
+
+        # 2. Получение имени пользователя
+        if self.sessionStorage[user_id]['first_name'] is None:
+            self.get_name(request, response)
             return
 
-        # если пользователь не новый, то попадаем сюда.
-        # если поле имени пустое, то это говорит о том,
-        # что пользователь еще не представился.
-        if self.sessionStorage[user_id]['first_name'] is None:
-            # в последнем его сообщение ищем имя.
-            first_name = self.get_first_name(request)
-            # если не нашли, то сообщаем пользователю что не расслышали.
-            if first_name is None:
-                response['response']['text'] = \
-                    'Не расслышала имя. Повтори, пожалуйста!'
-            # если нашли, то приветствуем пользователя.
-            # И спрашиваем какой город он хочет увидеть.
+        # 3. Согласие на игру
+        if not self.sessionStorage[user_id]['started']:
+            if not self.start_game(request, response):
+                return
             else:
-                self.sessionStorage[user_id]['first_name'] = first_name
-                response['response'][
-                    'text'] = 'Приятно познакомиться, ' \
-                              + first_name.title() \
-                              + '. Я - Алиса. Какой город хочешь увидеть?'
-                # получаем варианты buttons из ключей нашего словаря cities
-                response['response']['buttons'] = [
-                    {
-                        'title': city.title(),
-                        'hide': True
-                    } for city in self.CITIES
-                ]
-        # если мы знакомы с пользователем и он нам что-то написал,
-        # то это говорит о том, что он уже говорит о городе,
-        # что хочет увидеть.
+                self.ask_city(request, response)
+
+        # 4. Проверка ответа
+        guess_city = self.get_city(request)
+
+        if guess_city.lower() == self.sessionStorage[user_id]['guess_city']:
+            if len(self.sessionStorage[user_id]['cities']) == 0:
+                message = 'Ты угадал! К сожалению ты угадал все города и' \
+                          ' поэтому я не смогу больше с тобой играть! Пока.'
+                self.say(response, message)
+            else:
+                self.ask_city(request, response)
         else:
-            # ищем город в сообщение от пользователя
-            city = self.get_city(request)
-            # если этот город среди известных нам,
-            # то показываем его (выбираем одну из двух картинок случайно)
-            if city in self.CITIES:
-                response['response']['card'] = {}
-                response['response']['card']['type'] = 'BigImage'
-                response['response']['card']['title'] = 'Этот город я знаю.'
-                response['response']['card']['image_id'] = random.choice(
-                    self.CITIES[city])
-                response['response']['text'] = 'Я угадал!'
-            # если не нашел, то отвечает пользователю
-            # 'Первый раз слышу об этом городе.'
-            else:
-                response['response']['text'] = \
-                    'Первый раз слышу об этом городе. Попробуй еще разок!'
+            self.say(response, 'Неправильно! Попробуй еще')
+
+    def init_dialog(self, request):
+        user_id = request['session']['user_id']
+        self.sessionStorage[user_id] = {
+            'first_name': None,
+            'started': False,
+            'guess_city': None,
+            'cities': self.INIT_CITIES
+        }
+
+    def ask_city(self, request, response):
+        user_id = request['session']['user_id']
+        cities = self.sessionStorage[user_id]['guess_city']
+        city = choice(cities.keys())
+
+        self.sessionStorage[user_id]['guess_city'] = city
+
+        response['response']['card'] = {}
+        response['response']['card']['type'] = 'BigImage'
+        response['response']['card']['title'] = 'Угадай этот город!'
+        response['response']['card']['image_id'] = choice(cities[city])
+
+        del self.sessionStorage[user_id]['guess_city'][city]
+
+    def start_game(self, request, response):
+        user_id = request['session']['user_id']
+        tokens = request['request']['nlu']['tokens']
+
+        for start_word in self.START_GAME_WORDS:
+            # Если стартовое слово было сказано
+            if start_word in tokens:
+                self.sessionStorage[user_id]['started'] = True
+
+        # Стартовое слово не было сказано
+        if not self.sessionStorage[user_id]['started']:
+            self.say(response, 'Может, начнем игру?')
+            response['response']['buttons'] = [
+                choice(self.START_GAME_WORDS)]
+            return False
+
+    def get_name(self, request, response):
+        user_id = request['session']['user_id']
+        first_name = self.get_first_name(request)
+
+        if first_name is None:
+            self.say(response, 'Не расслышала имя. Повтори, пожалуйста!')
+        else:
+            self.sessionStorage[user_id]['first_name'] = first_name
+            self.say(response, f'Приятно познакомиться, '
+                               f'{first_name.title()}. Я - Алиса.')
+            response['response']['buttons'] = [choice(self.START_GAME_WORDS)]
+
+    @staticmethod
+    def say(response, text: str):
+        response['response']['text'] = text
 
     @staticmethod
     def get_city(request):
