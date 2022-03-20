@@ -67,7 +67,7 @@ class GuessCity(Skill):
         response['response']['card']['image_id'] = choice(cities[city])
         self.say(response, 'Угадай этот город!')
 
-        del self.sessionStorage[user_id]['guess_city'][city]
+        del self.sessionStorage[user_id]['cities'][city]
 
     def start_game(self, request, response):
         user_id = request['session']['user_id']
