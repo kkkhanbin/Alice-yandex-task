@@ -101,7 +101,13 @@ class GuessCity(Skill):
             self.sessionStorage[user_id]['first_name'] = first_name
             self.say(response, f'Приятно познакомиться, '
                                f'{first_name.title()}. Я - Алиса.')
-            response['response']['buttons'] = [choice(self.START_GAME_WORDS)]
+            response['response']['buttons'] = [
+                {
+                    'title': choice(self.START_GAME_WORDS),
+                    'payload': {},
+                    'hide': True
+                }
+            ]
 
     @staticmethod
     def say(response, text: str):
