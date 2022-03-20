@@ -65,6 +65,7 @@ class GuessCity(Skill):
         response['response']['card']['type'] = 'BigImage'
         response['response']['card']['title'] = 'Угадай этот город!'
         response['response']['card']['image_id'] = choice(cities[city])
+        self.say(response, 'Угадай этот город!')
 
         del self.sessionStorage[user_id]['guess_city'][city]
 
