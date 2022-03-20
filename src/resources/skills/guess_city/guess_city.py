@@ -44,7 +44,7 @@ class GuessCity(Skill):
                 message = 'Ты угадал! К сожалению ты угадал все города и' \
                           ' поэтому я не смогу больше с тобой играть! Пока.'
                 self.say(response, message)
-                response['end_session']['response'] = True
+                response['response']['end_session'] = True
                 return
             else:
                 self.ask_city(request, response)
