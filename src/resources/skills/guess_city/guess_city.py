@@ -13,7 +13,7 @@ class GuessCity(Skill):
     HELP_WORDS = ['помощь']
     HELP_MESSAGE = \
         'Это игра "Угадай город по фото". Вам показывается фото города и вы ' \
-        'должны угадать название этого города'
+        'должны угадать название этого города.'
 
     def handle_dialog(self, request, response):
         user_id = request['session']['user_id']
@@ -41,6 +41,7 @@ class GuessCity(Skill):
         for help_word in self.HELP_WORDS:
             if help_word in tokens:
                 self.say(response, self.HELP_MESSAGE)
+                return
 
         guess_city = self.get_city(request)
 
