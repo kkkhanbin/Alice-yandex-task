@@ -10,14 +10,18 @@ class GuessCity(Skill):
         'париж': ['1521359/b76a945d7e6fcf29c351']
     }
     START_GAME_WORDS = ['начать', 'старт', 'поехали']
+    HELP_WORDS = ['помощь']
+    HELP_MESSAGE = \
+        'Это игра "Угадай город по фото". Вам показывается фото города и вы ' \
+        'должны угадать название этого города'
 
     def handle_dialog(self, request, response):
         user_id = request['session']['user_id']
 
         # 1. Просьба представиться нового пользователя
         if request['session']['new']:
-            self.say(response, 'Привет! Назови свое имя!')
-            self.init_dialog(request)
+            self.say(response, f'Привет! {self.HELP_MESSAGE} Назови свое имя!')
+            self.init_dialog(request, response)
             return
 
         # 2. Получение имени пользователя
@@ -33,6 +37,11 @@ class GuessCity(Skill):
                 self.ask_city(request, response)
 
         # 4. Проверка ответа
+        tokens = request['request']['nlu']['tokens']
+        for help_word in self.HELP_WORDS:
+            if help_word in tokens:
+                self.say(response, self.HELP_MESSAGE)
+
         guess_city = self.get_city(request)
 
         if guess_city is None:
@@ -51,7 +60,7 @@ class GuessCity(Skill):
         else:
             self.say(response, 'Неправильно! Попробуй еще')
 
-    def init_dialog(self, request):
+    def init_dialog(self, request, response):
         user_id = request['session']['user_id']
         self.sessionStorage[user_id] = {
             'first_name': None,
@@ -59,6 +68,15 @@ class GuessCity(Skill):
             'guess_city': None,
             'cities': self.INIT_CITIES
         }
+
+        if self.sessionStorage[user_id]['started']:
+            response['response']['buttons'] = [
+                {
+                    'title': 'Помощь',
+                    'payload': {},
+                    'hide': True
+                }
+            ]
 
     def ask_city(self, request, response):
         user_id = request['session']['user_id']
