@@ -40,18 +40,26 @@ class GuessCity(Skill):
 
         # 4. Проверка ответа
         tokens = request['request']['nlu']['tokens']
+        guess_city = self.get_city(request)
+
         for help_word in self.HELP_WORDS:
             if help_word in tokens:
                 self.say(response, self.HELP_MESSAGE)
                 return
 
-        guess_city = self.get_city(request)
-
         if guess_city is None:
             self.say(response, 'Ты не назвал город!')
             return
 
+        if not self.sessionStorage[user_id]['question_set']:
+            if 'нет' in tokens:
+                self.exit(response)
+            elif 'да' in tokens:
+                self.ask_city(request, response)
+                return
+
         if guess_city.lower() == self.sessionStorage[user_id]['guess_city']:
+            self.sessionStorage[user_id]['question_set'] = False
             self.add_button(
                 response, 'Покажи город на карте',
                 f'https://yandex.ru/maps/?mode=search&text={guess_city}')
@@ -60,10 +68,12 @@ class GuessCity(Skill):
                 message = 'Ты угадал! К сожалению ты угадал все города и' \
                           ' поэтому я не смогу больше с тобой играть! Пока.'
                 self.say(response, message)
-                response['response']['end_session'] = True
+                self.exit(response)
                 return
             else:
-                self.ask_city(request, response)
+                self.say(response, 'Правильно! Сыграем еще?')
+                self.add_button(response, 'Да')
+                self.add_button(response, 'Нет')
         else:
             self.say(response, 'Неправильно! Попробуй еще')
 
@@ -86,7 +96,8 @@ class GuessCity(Skill):
             'first_name': None,
             'started': False,
             'guess_city': None,
-            'cities': self.INIT_CITIES
+            'cities': self.INIT_CITIES,
+            'question_set': False
         }
 
     def ask_city(self, request, response):
@@ -95,6 +106,7 @@ class GuessCity(Skill):
         city = choice(list(cities.keys()))
 
         self.sessionStorage[user_id]['guess_city'] = city
+        self.sessionStorage[user_id]['question_set'] = True
 
         response['response']['card'] = {}
         response['response']['card']['type'] = 'BigImage'
@@ -158,3 +170,6 @@ class GuessCity(Skill):
                 # то возвращаем ее значение.
                 # Во всех остальных случаях возвращаем None.
                 return entity['value'].get('first_name', None)
+
+    def exit(self, response):
+        response['response']['end_session'] = True
