@@ -36,13 +36,7 @@ class GuessCity(Skill):
             else:
                 self.ask_city(request, response)
 
-        response['response']['buttons'] = [
-            {
-                'title': 'Помощь',
-                'payload': {},
-                'hide': True
-            }
-        ]
+        self.add_button(response, 'Помощь')
 
         # 4. Проверка ответа
         tokens = request['request']['nlu']['tokens']
@@ -62,12 +56,28 @@ class GuessCity(Skill):
                 message = 'Ты угадал! К сожалению ты угадал все города и' \
                           ' поэтому я не смогу больше с тобой играть! Пока.'
                 self.say(response, message)
+                self.add_button(
+                    response, 'Покажи город на карте',
+                    f'https://yandex.ru/maps/?mode=search&text={guess_city}')
                 response['response']['end_session'] = True
                 return
             else:
                 self.ask_city(request, response)
         else:
             self.say(response, 'Неправильно! Попробуй еще')
+
+    @staticmethod
+    def add_button(response, title, url = None):
+        button = {
+            'title': title,
+            'payload': {},
+            'hide': True
+        }
+
+        if url is not None:
+            button['url'] = url
+
+        response['response']['buttons'].append(button)
 
     def init_dialog(self, request, response):
         user_id = request['session']['user_id']
@@ -105,14 +115,8 @@ class GuessCity(Skill):
         # Стартовое слово не было сказано
         if not self.sessionStorage[user_id]['started']:
             self.say(response, 'Может, начнем игру?')
-
-            response['response']['buttons'] = [
-                {
-                    'title': choice(self.START_GAME_WORDS),
-                    'payload': {},
-                    'hide': True
-                }
-            ]
+            self.add_button(
+                response, choice(self.START_GAME_WORDS).capitalize())
 
             return False
 
@@ -126,13 +130,8 @@ class GuessCity(Skill):
             self.sessionStorage[user_id]['first_name'] = first_name
             self.say(response, f'Приятно познакомиться, '
                                f'{first_name.title()}. Я - Алиса.')
-            response['response']['buttons'] = [
-                {
-                    'title': choice(self.START_GAME_WORDS),
-                    'payload': {},
-                    'hide': True
-                }
-            ]
+            self.add_button(
+                response, choice(self.START_GAME_WORDS).capitalize())
 
     @staticmethod
     def say(response, text: str):

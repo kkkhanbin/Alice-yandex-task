@@ -16,7 +16,8 @@ class Skill(Resource):
             'session': request.json['session'],
             'version': request.json['version'],
             'response': {
-                'end_session': False
+                'end_session': False,
+                'buttons': []
             }
         }
 
