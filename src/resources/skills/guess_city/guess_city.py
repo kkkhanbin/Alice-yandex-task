@@ -108,14 +108,13 @@ class GuessCity(Skill):
             'first_name': None,
             'started': False,
             'guess_city': None,
-            'cities': self.INIT_CITIES,
+            'cities': self.INIT_CITIES.copy(),
             'question_set': False
         }
 
     def ask_city(self, request, response):
         user_id = request['session']['user_id']
         cities = self.sessionStorage[user_id]['cities']
-        print(cities)
         city = choice(list(cities.keys()))
 
         self.sessionStorage[user_id]['guess_city'] = city
