@@ -92,6 +92,7 @@ class GuessCity(Skill):
                 return
             else:
                 self.say(response, 'Правильно! А в какой стране этот город?')
+                self.sessionStorage[user_id]['city_guessed'] = True
                 return
         else:
             self.say(response, 'Неправильно! Попробуй еще')
@@ -132,7 +133,6 @@ class GuessCity(Skill):
 
         self.sessionStorage[user_id]['guess_city'] = city
         self.sessionStorage[user_id]['question_set'] = True
-        self.sessionStorage[user_id]['city_guessed'] = True
 
         response['response']['card'] = {}
         response['response']['card']['type'] = 'BigImage'
