@@ -6,6 +6,13 @@ from src.resources.skills.skill import Skill
 class Translator(Skill):
     def handle_dialog(self, request, response):
         tokens = request['request']['nlu']['tokens']
+
+        if request['session']['new']:
+            response['response']['text'] = \
+                'Привет, это русско-английский переводчик. ' \
+                'Вводи любые слова и я их переведу'
+            return
+
         response['response']['text'] = self.translate(' '.join(tokens))
 
     @staticmethod
