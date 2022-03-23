@@ -43,6 +43,14 @@ class GuessCity(Skill):
                 self.say(response, self.HELP_MESSAGE)
                 return
 
+        response['response']['buttons'] = [
+            {
+                'title': 'Помощь',
+                'payload': {},
+                'hide': True
+            }
+        ]
+
         guess_city = self.get_city(request)
 
         if guess_city is None:
@@ -69,15 +77,6 @@ class GuessCity(Skill):
             'guess_city': None,
             'cities': self.INIT_CITIES
         }
-
-        if self.sessionStorage[user_id]['started']:
-            response['response']['buttons'] = [
-                {
-                    'title': 'Помощь',
-                    'payload': {},
-                    'hide': True
-                }
-            ]
 
     def ask_city(self, request, response):
         user_id = request['session']['user_id']
