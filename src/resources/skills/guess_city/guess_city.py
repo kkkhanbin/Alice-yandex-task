@@ -132,6 +132,7 @@ class GuessCity(Skill):
 
         self.sessionStorage[user_id]['guess_city'] = city
         self.sessionStorage[user_id]['question_set'] = True
+        self.sessionStorage[user_id]['city_guessed'] = True
 
         response['response']['card'] = {}
         response['response']['card']['type'] = 'BigImage'
