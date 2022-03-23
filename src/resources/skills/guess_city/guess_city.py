@@ -52,13 +52,14 @@ class GuessCity(Skill):
             return
 
         if guess_city.lower() == self.sessionStorage[user_id]['guess_city']:
+            self.add_button(
+                response, 'Покажи город на карте',
+                f'https://yandex.ru/maps/?mode=search&text={guess_city}')
+
             if len(self.sessionStorage[user_id]['cities']) == 0:
                 message = 'Ты угадал! К сожалению ты угадал все города и' \
                           ' поэтому я не смогу больше с тобой играть! Пока.'
                 self.say(response, message)
-                self.add_button(
-                    response, 'Покажи город на карте',
-                    f'https://yandex.ru/maps/?mode=search&text={guess_city}')
                 response['response']['end_session'] = True
                 return
             else:
