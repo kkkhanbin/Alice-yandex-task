@@ -41,7 +41,10 @@ class GuessCity(Skill):
 
         # 4. Проверка ответа
         tokens = request['request']['nlu']['tokens']
-        command = request['request']['command']
+        if 'command' in request['request']:
+            command = request['request']['command']
+        else:
+            command = ' '.join(tokens)
         guess_city = self.get_city(request)
 
         for help_word in self.HELP_WORDS:
