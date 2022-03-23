@@ -20,10 +20,11 @@ class CityAssistant(Skill):
                 'text'] = 'Ты не написал название не одного города!'
         elif len(cities) == 1:
             response['response']['text'] = 'Этот город в стране - ' + \
-                                      self.get_country(cities[0])
+                                      self.get_geo_info(cities[0], 'country')
         elif len(cities) == 2:
-            distance = self.get_distance(self.get_coordinates(
-                cities[0]), self.get_coordinates(cities[1]))
+            distance = self.get_distance(
+                self.get_geo_info(cities[0], 'coordinates'),
+                self.get_geo_info(cities[1], 'coordinates'))
             response['response']['text'] = \
                 'Расстояние между этими городами: ' + \
                 str(round(distance)) + ' км.'
@@ -106,3 +107,9 @@ class CityAssistant(Skill):
             return long, lat
         except Exception as e:
             return e
+
+    def get_geo_info(self, city_name, type_info):
+        if type_info == 'country':
+            return self.get_country(city_name)
+        elif type_info == 'coordinates':
+            return self.get_coordinates(city_name)
