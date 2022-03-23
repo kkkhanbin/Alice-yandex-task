@@ -4,7 +4,8 @@ from flask import Flask
 from flask_restful import Api
 
 from src.config import Config
-from src.resources.skills import Elephant, GuessCity, CityPhoto, CityAssistant
+from src.resources.skills import Elephant, GuessCity, CityPhoto, \
+    CityAssistant, Translator
 
 
 def add_resources(api: Api, *resources):
@@ -25,6 +26,8 @@ app.config.from_object(Config)
 api = Api(app)
 add_resources(
     api, (Elephant, '/skill/elephant'), (GuessCity, '/skill/guess_city'),
-    (CityPhoto, '/skill/city_photo'), (CityAssistant, '/skill/city_assistant'))
+    (CityPhoto, '/skill/city_photo'), (CityAssistant, '/skill/city_assistant'),
+    (Translator, '/skill/translator')
+)
 
 logging.basicConfig(level=logging.INFO)
