@@ -115,6 +115,7 @@ class GuessCity(Skill):
     def ask_city(self, request, response):
         user_id = request['session']['user_id']
         cities = self.sessionStorage[user_id]['cities']
+        print(cities)
         city = choice(list(cities.keys()))
 
         self.sessionStorage[user_id]['guess_city'] = city
