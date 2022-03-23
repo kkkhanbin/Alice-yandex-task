@@ -14,6 +14,7 @@ class GuessCity(Skill):
     HELP_MESSAGE = \
         'Это игра "Угадай город по фото". Вам показывается фото города и вы ' \
         'должны угадать название этого города.'
+    SHOW_MAP_MESSAGE = 'Покажи город на карте'
 
     def handle_dialog(self, request, response):
         user_id = request['session']['user_id']
@@ -40,6 +41,7 @@ class GuessCity(Skill):
 
         # 4. Проверка ответа
         tokens = request['request']['nlu']['tokens']
+        command = request['request']['command']
         guess_city = self.get_city(request)
 
         for help_word in self.HELP_WORDS:
@@ -53,6 +55,9 @@ class GuessCity(Skill):
             elif 'да' in tokens:
                 self.ask_city(request, response)
                 return
+            elif self.SHOW_MAP_MESSAGE.lower() in command:
+                self.ask_play_again(response)
+                return
 
         if guess_city is None:
             self.say(response, 'Ты не назвал город!')
@@ -61,7 +66,7 @@ class GuessCity(Skill):
         if guess_city.lower() == self.sessionStorage[user_id]['guess_city']:
             self.sessionStorage[user_id]['question_set'] = False
             self.add_button(
-                response, 'Покажи город на карте',
+                response, self.SHOW_MAP_MESSAGE,
                 f'https://yandex.ru/maps/?mode=search&text={guess_city}')
 
             if len(self.sessionStorage[user_id]['cities']) == 0:
@@ -71,11 +76,15 @@ class GuessCity(Skill):
                 self.exit(response)
                 return
             else:
-                self.say(response, 'Правильно! Сыграем еще?')
-                self.add_button(response, 'Да')
-                self.add_button(response, 'Нет')
+                self.ask_play_again(response)
+                return
         else:
             self.say(response, 'Неправильно! Попробуй еще')
+
+    def ask_play_again(self, response):
+        self.say(response, 'Правильно! Сыграем еще?')
+        self.add_button(response, 'Да')
+        self.add_button(response, 'Нет')
 
     @staticmethod
     def add_button(response, title, url = None):
