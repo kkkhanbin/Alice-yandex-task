@@ -47,16 +47,16 @@ class GuessCity(Skill):
                 self.say(response, self.HELP_MESSAGE)
                 return
 
-        if guess_city is None:
-            self.say(response, 'Ты не назвал город!')
-            return
-
         if not self.sessionStorage[user_id]['question_set']:
             if 'нет' in tokens:
                 self.exit(response)
             elif 'да' in tokens:
                 self.ask_city(request, response)
                 return
+
+        if guess_city is None:
+            self.say(response, 'Ты не назвал город!')
+            return
 
         if guess_city.lower() == self.sessionStorage[user_id]['guess_city']:
             self.sessionStorage[user_id]['question_set'] = False
