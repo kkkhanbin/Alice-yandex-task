@@ -66,8 +66,9 @@ class GuessCity(Skill):
                 return
 
         if self.sessionStorage[user_id]['city_guessed']:
-            if self.get_country(self.sessionStorage[user_id]['guess_city']) \
-                    in tokens:
+            if self.get_country(
+                    self.sessionStorage[user_id]['guess_city']).lower() in\
+                    tokens:
                 self.ask_play_again(response)
                 self.sessionStorage[user_id]['city_guessed'] = False
                 self.sessionStorage[user_id]['question_set'] = False
