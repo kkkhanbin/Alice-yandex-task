@@ -36,13 +36,6 @@ class GuessCity(Skill):
             else:
                 self.ask_city(request, response)
 
-        # 4. Проверка ответа
-        tokens = request['request']['nlu']['tokens']
-        for help_word in self.HELP_WORDS:
-            if help_word in tokens:
-                self.say(response, self.HELP_MESSAGE)
-                return
-
         response['response']['buttons'] = [
             {
                 'title': 'Помощь',
@@ -50,6 +43,13 @@ class GuessCity(Skill):
                 'hide': True
             }
         ]
+
+        # 4. Проверка ответа
+        tokens = request['request']['nlu']['tokens']
+        for help_word in self.HELP_WORDS:
+            if help_word in tokens:
+                self.say(response, self.HELP_MESSAGE)
+                return
 
         guess_city = self.get_city(request)
 
