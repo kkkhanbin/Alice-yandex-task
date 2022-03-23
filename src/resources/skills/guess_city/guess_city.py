@@ -54,7 +54,8 @@ class GuessCity(Skill):
         if guess_city.lower() == self.sessionStorage[user_id]['guess_city']:
             self.add_button(
                 response, 'Покажи город на карте',
-                f'https://yandex.ru/maps/?mode=search&text={guess_city}')
+                f'https://yandex.ru/maps/?mode=search&text={guess_city}',
+                False)
 
             if len(self.sessionStorage[user_id]['cities']) == 0:
                 message = 'Ты угадал! К сожалению ты угадал все города и' \
@@ -68,11 +69,11 @@ class GuessCity(Skill):
             self.say(response, 'Неправильно! Попробуй еще')
 
     @staticmethod
-    def add_button(response, title, url = None):
+    def add_button(response, title, url = None, hide = True):
         button = {
             'title': title,
             'payload': {},
-            'hide': True
+            'hide': hide
         }
 
         if url is not None:
