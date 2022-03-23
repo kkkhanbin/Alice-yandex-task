@@ -1,5 +1,7 @@
 from random import choice
 
+import requests
+
 from src.resources.skills.skill import Skill
 
 
@@ -55,6 +57,7 @@ class GuessCity(Skill):
         if not self.sessionStorage[user_id]['question_set']:
             if 'нет' in tokens:
                 self.exit(response)
+                return
             elif 'да' in tokens:
                 self.ask_city(request, response)
                 return
@@ -62,12 +65,21 @@ class GuessCity(Skill):
                 self.ask_play_again(response)
                 return
 
+        if self.sessionStorage[user_id]['city_guessed']:
+            if self.get_country(self.sessionStorage[user_id]['guess_city']) \
+                    in tokens:
+                self.ask_play_again(response)
+                self.sessionStorage[user_id]['city_guessed'] = False
+                self.sessionStorage[user_id]['question_set'] = False
+            else:
+                self.say(response, 'Неправильно! Попробуй еще')
+            return
+
         if guess_city is None:
             self.say(response, 'Ты не назвал город!')
             return
 
         if guess_city.lower() == self.sessionStorage[user_id]['guess_city']:
-            self.sessionStorage[user_id]['question_set'] = False
             self.add_button(
                 response, self.SHOW_MAP_MESSAGE,
                 f'https://yandex.ru/maps/?mode=search&text={guess_city}')
@@ -79,7 +91,7 @@ class GuessCity(Skill):
                 self.exit(response)
                 return
             else:
-                self.ask_play_again(response)
+                self.say(response, 'Правильно! А в какой стране этот город?')
                 return
         else:
             self.say(response, 'Неправильно! Попробуй еще')
@@ -109,7 +121,8 @@ class GuessCity(Skill):
             'started': False,
             'guess_city': None,
             'cities': self.INIT_CITIES.copy(),
-            'question_set': False
+            'question_set': False,
+            'city_guessed': False
         }
 
     def ask_city(self, request, response):
@@ -182,6 +195,23 @@ class GuessCity(Skill):
                 # то возвращаем ее значение.
                 # Во всех остальных случаях возвращаем None.
                 return entity['value'].get('first_name', None)
+
+    @staticmethod
+    def get_country(city_name):
+        try:
+            url = "https://geocode-maps.yandex.ru/1.x/"
+            params = {
+                "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
+                'geocode': city_name,
+                'format': 'json'
+            }
+            data = requests.get(url, params).json()
+            # все отличие тут, мы получаем имя страны
+            return data['response']['GeoObjectCollection'][
+                'featureMember'][0]['GeoObject']['metaDataProperty'][
+                'GeocoderMetaData']['AddressDetails']['Country']['CountryName']
+        except Exception as e:
+            return e
 
     def exit(self, response):
         response['response']['end_session'] = True
