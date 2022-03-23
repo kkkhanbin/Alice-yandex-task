@@ -216,4 +216,5 @@ class GuessCity(Skill):
             return e
 
     def exit(self, response):
+        self.say(response, 'Пока!')
         response['response']['end_session'] = True
